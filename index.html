@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stoa Swaps — Robinhood Chain Dashboard</title>
+<meta name="description" content="Public dashboard of Stoa's swaps on Robinhood Chain (chain 4663): volume, traders and routes per venue, read live from the chain. Built for the Stoa Build Bounty.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="wrap">
+  <p class="eyebrow">STOA · ROBINHOOD CHAIN (4663) · BUILD BOUNTY ENTRY</p>
+  <h1>Stoa swaps dashboard</h1>
+  <p class="sub">Every swap routed through StoaRouter
+    <code>0x2F28…3eE5</code> on Robinhood Chain — volume, traders and routes per venue,
+    read live from the chain. No data is hardcoded: the numbers below are fetched in your
+    browser from the public Robinhood Chain RPC and Stoa's public quote API on every load.</p>
+  <p id="status" class="status">Loading live data…</p>
+  <p class="actions">
+    <a class="btn" id="trade-link" href="https://stoadex.com/trade?ref=0x91be6a07b7726e10cf2fac621e08944a653035d2" target="_blank" rel="noopener">Swap on Stoa ↗</a>
+    <button id="refresh" type="button">Refresh now</button>
+    <span class="muted" id="updated"></span>
+  </p>
+</header>
+
+<main class="wrap">
+  <section id="kpis" class="grid" aria-label="Totals">
+    <div class="card"><div class="lbl">SWAPS · ALL TIME</div><div class="num" id="k-swaps">—</div><div class="muted" id="k-swaps-sub"></div></div>
+    <div class="card"><div class="lbl">VOLUME · USD ALL TIME</div><div class="num" id="k-usd">—</div><div class="muted">Priced legs only; see methodology</div></div>
+    <div class="card"><div class="lbl">TRADERS · UNIQUE SENDERS</div><div class="num" id="k-traders">—</div><div class="muted" id="k-traders-sub"></div></div>
+    <div class="card"><div class="lbl">SWAPS · LAST 24H</div><div class="num" id="k-24h">—</div><div class="muted" id="k-usd24h"></div></div>
+    <div class="card"><div class="lbl">SWAPS WITH A REFERRER</div><div class="num" id="k-ref">—</div><div class="muted">All swaps so far used referrer 0x0</div></div>
+    <div class="card"><div class="lbl">LIVE ETH PRICE (STOA QUOTE)</div><div class="num" id="k-eth">—</div><div class="muted">1 ETH → USDG, stoadex.com/api/v1/quote</div></div>
+  </section>
+
+  <section class="card wide">
+    <h2>Volume &amp; swaps per day</h2>
+    <p class="muted">UTC days, from each swap's block timestamp. USD per swap is priced from its USDG leg if it has one, otherwise its ETH/WETH leg at the live ETH price, otherwise its $STOA / Stoa Exchange leg at the live quote.</p>
+    <div id="daily-bars" class="bars">Loading…</div>
+    <table id="daily-table">
+      <thead><tr><th>Day (UTC)</th><th>Swaps</th><th>Volume (USD)</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="card wide">
+    <h2>Routes per venue</h2>
+    <p class="muted">Each swap fills on one venue (leg 1), or two venues via a mid token (leg 1 + leg 2). Venue names come from Stoa's own <a href="https://github.com/StoaDex/Stoa/blob/main/web/lib/deployments-4663.json" target="_blank" rel="noopener">deployments-4663.json</a>. A venue address not in that file is shown as a maker pool / unknown venue, never guessed.</p>
+    <table id="venue-table">
+      <thead><tr><th>Venue</th><th>Legs</th><th>Share of legs</th><th>As leg 1</th><th>As leg 2</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="card wide">
+    <h2>Top traders</h2>
+    <table id="trader-table">
+      <thead><tr><th>Trader</th><th>Swaps</th><th>Volume (USD)</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="card wide">
+    <h2>Recent swaps</h2>
+    <p class="muted">Newest first. Every “Trade” link carries this dashboard's referrer, <code>0x91be…35d2</code>.</p>
+    <table id="swap-table">
+      <thead><tr><th>Time (UTC)</th><th>Trader</th><th>Swap</th><th>USD</th><th>Route</th><th>Tx</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="card wide">
+    <h2>Try a swap — referrer included</h2>
+    <p class="muted">Live quote from Stoa's API for 0.01 ETH → USDG, with referrer
+      <code>0x91be6a07b7726e10cf2fac621e08944a653035d2</code> already set. The button opens the same swap on Stoa with that referrer, so the referrer earns 10% of Stoa's 2 bps fee.</p>
+    <p id="quote-box">Loading quote…</p>
+    <p><a class="btn" id="quote-link" href="https://stoadex.com/trade?ref=0x91be6a07b7726e10cf2fac621e08944a653035d2" target="_blank" rel="noopener">Open this swap on Stoa ↗</a></p>
+  </section>
+
+  <section class="card wide">
+    <h2>Data sources &amp; methodology</h2>
+    <ul class="src">
+      <li><b>Primary — Robinhood Chain public JSON-RPC</b> <code>https://rpc.mainnet.chain.robinhood.com</code> (CORS: <code>access-control-allow-origin: *</code>, verified 2026-11-20). <code>eth_getLogs</code> on StoaRouter <code>0x2F2804fad735a38015650f32f95Ad5E08D6B3eE5</code> from deployment block 114,244,443, topic0 <code>0x2bbce25631e8fa58085b7ea5929726c3acdf2df8d6b1f099eb32fb7425a4f6da</code> = <code>Routed(address,address,address,address,address,uint256,uint256,address,address,address)</code> (<code>contracts/src/StoaRouter.sol</code>). Block timestamps via <code>eth_getBlockByNumber</code>. Full queries in <a href="README.md">README.md</a>.</li>
+      <li><b>Prices — Stoa quote API</b> <code>GET https://stoadex.com/api/v1/quote?chain=robinhood&amp;…&amp;referrer=0x91be…</code> (CORS: <code>*</code>, verified 2026-11-20). ETH, $STOA and Stoa Exchange token are priced from live quotes; USDG is $1 by definition (6 decimals).</li>
+      <li><b>Cross-check — Stoa's own stats</b> <code>https://stoadex.com/api/stats</code> (attempted in-browser; it sends no CORS header, so most browsers block it — its status is shown below). Last verified by curl 2026-11-20 14:58 UTC: Robinhood <b>31 swaps, $634.45 all-time, 1 swap / $4.02 in 24h</b>, first swap 2026-11-14 19:00:34 UTC — exactly matching this dashboard's RPC count.</li>
+      <li><b>Explorer — Blockscout</b> <code>https://robinhoodchain.blockscout.com</code>. Its API v2 is Cloudflare-challenged from datacenter IPs (verified 2026-11-20), so the dashboard does not depend on it; every transaction links to its Blockscout page for verification.</li>
+    </ul>
+    <p class="muted">Honest note: activity is small. 31 swaps since launch (first 2026-11-14), about $634 of volume. Nothing here is inflated or estimated from a sample — the tables list every swap found in the logs.</p>
+    <h3>Source status (this load)</h3>
+    <ul class="src" id="source-status"><li>Checking…</li></ul>
+    <div id="snapshot" class="snapshot" hidden>
+      <b>OFFLINE SNAPSHOT — not live data.</b> The live RPC fetch failed from this browser, so the numbers above are empty.
+      Last verified snapshot, 2026-11-20 14:58 UTC (curl + RPC, see README.md):
+      31 swaps, 18 unique traders, $634.45 all-time volume (Stoa /api/stats), first swap 2026-11-14 19:00:34 UTC, last swap 2026-11-20 11:58:06 UTC.
+      Venues (legs): Uniswap V4 (old adapter) 24, Uniswap V3 11, Uniswap V4 (V2 adapter) 1, Aero 1, Pons 2.
+    </div>
+  </section>
+
+  <footer class="muted">
+    Built for the Stoa Build Bounty (“Public dashboard”, $50 in USDG on Robinhood Chain, open until 20 Dec 2026 23:59 UTC).
+    Referrer / payout: <code>0x91be6a07b7726e10cf2fac621e08944a653035d2</code>.
+    Source code: open on GitHub — link is added when the entry is submitted (see SUBMISSION-DRAFT.md in the repo).
+    Stoa is not affiliated with this dashboard; contract data is read from the public chain.
+  </footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+*{box-sizing:border-box}
+body{margin:0;background:#0c0f14;color:#e8ecf1;font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1020px;margin:0 auto;padding:0 20px}
+header{padding:36px 0 8px}
+.eyebrow{color:#8ab4ff;letter-spacing:.12em;font-size:12px;font-weight:700;margin:0 0 8px}
+h1{margin:0 0 10px;font-size:34px;line-height:1.15}
+h2{margin:0 0 8px;font-size:20px}
+h3{margin:18px 0 6px;font-size:15px}
+.sub{color:#b7c0cc;max-width:760px}
+code{background:#1a2230;border:1px solid #2a3444;border-radius:5px;padding:1px 5px;font-size:.85em;overflow-wrap:anywhere}
+a{color:#8ab4ff}
+.status{padding:10px 14px;border:1px solid #2a3444;border-radius:8px;background:#11161f}
+.status.ok{border-color:#2c7a4b;background:#10231a}
+.status.bad{border-color:#8a3b3b;background:#2a1414}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 26px}
+.btn{display:inline-block;background:#2b6cff;color:#fff;text-decoration:none;padding:9px 16px;border-radius:8px;font-weight:600}
+.btn:hover{background:#3d7bff}
+button{cursor:pointer;background:#1a2230;color:#e8ecf1;border:1px solid #2a3444;border-radius:8px;padding:9px 14px;font:inherit}
+.muted{color:#8b96a5;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:14px}
+.card{background:#11161f;border:1px solid #232c3b;border-radius:12px;padding:18px}
+.card.wide{margin-bottom:14px}
+.lbl{color:#8b96a5;font-size:12px;letter-spacing:.08em;font-weight:700}
+.num{font-size:32px;font-weight:700;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #232c3b;vertical-align:top}
+th{color:#8b96a5;font-size:12px;letter-spacing:.06em}
+td{font-variant-numeric:tabular-nums}
+tbody tr:hover{background:#161d29}
+.bars{display:flex;align-items:flex-end;gap:6px;height:120px;margin:14px 0 4px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;min-width:0}
+.bar i{display:block;width:100%;background:#2b6cff;border-radius:4px 4px 0 0;min-height:2px}
+.bar span{font-size:11px;color:#8b96a5;white-space:nowrap}
+.bar b{font-size:11px}
+.snapshot{margin-top:14px;padding:12px;border:1px dashed #c98a2b;border-radius:8px;background:#241d10;color:#f0d9a8}
+.src li{margin-bottom:8px}
+footer{padding:10px 0 40px}
+@media (max-width:640px){h1{font-size:26px}.num{font-size:26px}}
